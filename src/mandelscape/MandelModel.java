@@ -16,6 +16,9 @@
  */
 package mandelscape;
 
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -25,6 +28,8 @@ import java.util.Random;
  */
 public class MandelModel {
     private int maxIter;
+    private final List<MandelModelChangeListener> listeners =
+        new ArrayList<MandelModelChangeListener>();
 
     final private double cr0Min = -2.5;
     final private double cr0Max = 0.5;
@@ -49,21 +54,36 @@ public class MandelModel {
         this.ciMax = ci0Max;
     }
 
-    public void setMaxIter(int newMaxIter) {
-        maxIter = newMaxIter;
+    public void addChangeListener(MandelModelChangeListener listener) {
+        listeners.add(listener);
     }
 
-    public final void reset() {
+    private void fireModelChangedEvent() {
+        for (MandelModelChangeListener listener : listeners)
+            listener.modelHasChanged();
+    }
+
+    public void setMaxIter(int newMaxIter) {
+        maxIter = newMaxIter;
+
+        update();
+    }
+
+    public void resetZoom() {
         crMin = cr0Min;
         crMax = cr0Max;
         ciMin = ci0Min;
         ciMax = ci0Max;
+
+        update();
     }
 
     public void setDimension(int width, int height) {
         this.width = width;
         this.height = height;
         iters = new int[width*height];
+
+        update();
     }
 
     /**
@@ -111,6 +131,19 @@ public class MandelModel {
             ciMin + dci*(y + mag*(random.nextDouble()-0.5)));
     }
 
+    public BufferedImage getImage(MandelColourModel colourModel) {
+        BufferedImage image = new BufferedImage(width, height,
+            BufferedImage.TYPE_INT_RGB);
+
+        for (int x=0; x<width; x++) {
+            for (int y=0; y<height; y++) {
+                image.setRGB(x, y, colourModel.iterToColor(iters[x*height + y], maxIter).getRGB());
+            }
+        }
+
+        return image;
+    }
+
     public void update() {
         Random random = new Random();
 
@@ -121,5 +154,7 @@ public class MandelModel {
                 iters[x*height + y] = getEscapeIters(c);
             }
         }
+
+        fireModelChangedEvent();
     }
 }

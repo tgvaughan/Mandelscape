@@ -42,7 +42,10 @@ public class MandelscapeApp extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         Container cp = getContentPane();
 
-        MandelPanel mandelPanel = new MandelPanel(500, -2, 0.5, -1.25 , 1.25);
+        final MandelModel model = new MandelModel(500, 800, 800);
+        MandelColourModel colourModel = new BasicMandelColourModel();
+
+        final MandelPanel mandelPanel = new MandelPanel(model, colourModel);
         cp.add(mandelPanel, BorderLayout.CENTER);
         mandelPanel.repaint();
 
@@ -53,7 +56,7 @@ public class MandelscapeApp extends JFrame {
             @Override
             public void stateChanged(ChangeEvent e) {
                 JSpinner spinnerObj = (JSpinner)e.getSource();
-                mandelPanel.setMaxIter((int)(spinnerObj.getModel().getValue()));
+                model.setMaxIter((Integer)spinnerObj.getValue());
                 mandelPanel.repaint();
             }
         });
