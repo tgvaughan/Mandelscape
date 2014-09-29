@@ -279,28 +279,45 @@ public class MandelModel {
 
                 System.out.println(Thread.currentThread().getName() + ": START");
                 
-                for (int x=0; x<width; x++) {
-                    for (int y=0; y<height; y++) {
+                for (int bsize=64; bsize>0; bsize/=2) {
+                    for (int x=0; x<width; x+=bsize) {
+                        for (int y=0; y<height; y+=bsize) {
 
-                        if (isCancelled()) {
-                            System.out.println(Thread.currentThread().getName() + ": CANCELLED");
-                            //return null;
-                        }
+                             if (isCancelled()) {
+                                 System.out.println(Thread.currentThread().getName() + ": CANCELLED");
+                                 return null;
+                             }
                         
-                        CDouble c = getPointJittered(x, y, 0.1);
-                        iters[x*height + y] = getEscapeIters(c);
-                    }
+                             CDouble c = getPointJittered(x, y, 0.1);
+                             int escapeIters;
+                             if (bsize<64 && x % (bsize*2) == 0 && y % (bsize*2) == 0)
+                                 escapeIters = iters[x*height + y];
+                             else {
+                                 escapeIters = getEscapeIters(c);
+                                 iters[x*height + y] = escapeIters;
+                             }
+
+                             for (int xb=x; xb<x+bsize && xb<width; xb++) {
+                                 for (int yb=y; yb<y+bsize && yb<height; yb++) {
+                                     if (xb == x && yb==y)
+                                         continue;
+
+                                    iters[xb*height + yb] = escapeIters;
+                                 }
+                             }
+                         }
+                     }
                 }
 
                 System.out.println(Thread.currentThread().getName() + ": FINISHED");
 
-                fireModelChangedEvent();
                 return null;
             }
 
             @Override
             protected void done() {
                 System.out.println(Thread.currentThread().getName() + ": DONE");
+                fireModelChangedEvent();
             }
         };
 
