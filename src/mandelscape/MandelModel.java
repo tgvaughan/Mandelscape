@@ -19,6 +19,7 @@ package mandelscape;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingWorker;
 
 /**
  * Model for the Mandelbrot set.  Contains the computed escape iteration
@@ -42,6 +43,8 @@ public class MandelModel {
 
     private int [] iters;
     private int width, height;
+
+    private SwingWorker worker;
 
     /**
      * Create a new MandelModel with the specified initial maximum iteration
@@ -265,14 +268,42 @@ public class MandelModel {
      * Compute boundary escape iteration counts for each pixel in region.
      */
     public void update() {
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<height; y++) {
 
-                CDouble c = getPointJittered(x, y, 0.1);
-                iters[x*height + y] = getEscapeIters(c);
+        if (worker != null)
+            worker.cancel(true);
+
+        worker = new SwingWorker<Void,Void>() {
+
+            @Override
+            protected Void doInBackground() throws Exception {
+
+                System.out.println(Thread.currentThread().getName() + ": START");
+                
+                for (int x=0; x<width; x++) {
+                    for (int y=0; y<height; y++) {
+
+                        if (isCancelled()) {
+                            System.out.println(Thread.currentThread().getName() + ": CANCELLED");
+                            //return null;
+                        }
+                        
+                        CDouble c = getPointJittered(x, y, 0.1);
+                        iters[x*height + y] = getEscapeIters(c);
+                    }
+                }
+
+                System.out.println(Thread.currentThread().getName() + ": FINISHED");
+
+                fireModelChangedEvent();
+                return null;
             }
-        }
 
-        fireModelChangedEvent();
+            @Override
+            protected void done() {
+                System.out.println(Thread.currentThread().getName() + ": DONE");
+            }
+        };
+
+        worker.execute();
     }
 }
