@@ -17,8 +17,12 @@
 package mandelscape;
 
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
 /**
@@ -28,7 +32,7 @@ import javax.swing.JPanel;
 public class MandelPanel extends JPanel {
 
     private final MandelModel model;
-    private final MandelColourModel colourModel;
+    private MandelColourModel colourModel;
 
     public MandelPanel(final MandelModel model, MandelColourModel colourModel) {
         this.model = model; 
@@ -48,6 +52,34 @@ public class MandelPanel extends JPanel {
             }
         });
 
+        addMouseWheelListener(new MouseWheelListener() {
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.getWheelRotation()==0)
+                    return;
+
+                Point point = e.getPoint();
+
+                if (e.getWheelRotation()>0) {
+                    // Scroll down (zoom out)
+
+                    model.zoom(point.x, point.y, 0.8);
+                } else {
+                    // Scroll up (zoom in)
+
+                    model.zoom(point.x, point.y, 1.2);
+                }
+            }
+        });
+    }
+
+    public void setColourModel(MandelColourModel colourModel) {
+        this.colourModel = colourModel;
+        repaint();
+    }
+
+    public BufferedImage getImage() {
+        return model.getImage(colourModel);
     }
 
     @Override

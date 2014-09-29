@@ -19,16 +19,26 @@ package mandelscape;
 import java.awt.Color;
 
 /**
- * Simple interface for objects that describe a mapping from iteration
- * counts to colours.
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
-public interface MandelColourModel {
+public class RainbowColourModel implements MandelColourModel {
 
     @Override
-    public String toString();
+    public String toString() {
+        return "Rainbow";
+    }
 
-    public Color iterToColor(int iter, int maxIter);
+    @Override
+    public Color iterToColor(int iter, int maxIter) {
+
+        // Colour the mandelbrot set black
+        if (iter<0)
+            return Color.BLACK;
+
+        float relIter = iter/(float)maxIter;
+
+        return Color.getHSBColor((float)(0.5 + (float)Math.pow(relIter,0.5) % 1.0), 1, 1-relIter);
+    }
     
 }

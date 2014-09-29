@@ -22,18 +22,23 @@ import java.awt.Color;
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
-public class BasicMandelColourModel implements MandelColourModel {
+public class IceColourModel implements MandelColourModel {
+
+    @Override
+    public String toString() {
+        return "Blue Ice";
+    }
 
     @Override
     public Color iterToColor(int iter, int maxIter) {
-
+        
         // Colour the mandelbrot set black
         if (iter<0)
             return Color.BLACK;
 
         float relIter = iter/(float)maxIter;
 
-        return Color.getHSBColor((float)(0.5 + (float)Math.pow(relIter,0.5) % 1.0), 1, 1-relIter);
+        return Color.getHSBColor((float)0.5, 1, (float)Math.pow(relIter, 0.2));
     }
     
 }

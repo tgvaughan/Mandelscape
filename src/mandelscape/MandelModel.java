@@ -78,6 +78,25 @@ public class MandelModel {
         update();
     }
 
+    public void zoom(int centrex, int centrey, double factor) {
+        zoom(getPoint(centrex, centrey), factor);
+    }
+
+    public void zoom(CDouble centre, double factor) {
+        double crMinPrime = crMin/factor - centre.real*(1.0/factor-1);
+        double crMaxPrime = crMinPrime + (crMax-crMin)/factor;
+        double ciMinPrime = ciMin/factor - centre.imag*(1.0/factor-1);
+        double ciMaxPrime = ciMinPrime + (ciMax-ciMin)/factor;
+
+        crMin = crMinPrime;
+        crMax = crMaxPrime;
+        ciMin = ciMinPrime;
+        ciMax = ciMaxPrime;
+
+        update();
+    }
+
+
     public void setDimension(int width, int height) {
         this.width = width;
         this.height = height;
