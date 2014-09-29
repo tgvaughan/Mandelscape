@@ -113,6 +113,7 @@ public class MandelscapeApp extends JFrame {
         setJMenuBar(menuBar);
 
         JMenu fileMenu = new JMenu("File");
+        fileMenu.setMnemonic(KeyEvent.VK_F);
         menuBar.add(fileMenu);
 
         JMenuItem fileSaveMenuItem = new JMenuItem("Save image", KeyEvent.VK_S);
@@ -157,6 +158,7 @@ public class MandelscapeApp extends JFrame {
         fileMenu.add(fileExitMenuItem);
 
         JMenu helpMenu = new JMenu("Help");
+        helpMenu.setMnemonic(KeyEvent.VK_H);
         menuBar.add(helpMenu);
 
         JMenuItem helpControlsMenuItem = new JMenuItem("Controls...", KeyEvent.VK_C);
