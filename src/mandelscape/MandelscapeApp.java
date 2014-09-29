@@ -20,12 +20,16 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  *
@@ -38,14 +42,22 @@ public class MandelscapeApp extends JFrame {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         Container cp = getContentPane();
 
-        MandelPanel mandelPanel = new MandelPanel(5000, -2, 0.5, -1.25 , 1.25);
+        MandelPanel mandelPanel = new MandelPanel(500, -2, 0.5, -1.25 , 1.25);
         cp.add(mandelPanel, BorderLayout.CENTER);
         mandelPanel.repaint();
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(new JLabel("Maximum number of iterations: "));
-        bottomPanel.add(new JSpinner(new SpinnerNumberModel(500, 100, 10000, 100)));
-        bottomPanel.add(new JButton("Update"));
+        JSpinner iterSpinner = new JSpinner(new SpinnerNumberModel(500, 100, 10000, 100));
+        iterSpinner.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSpinner spinnerObj = (JSpinner)e.getSource();
+                mandelPanel.setMaxIter((int)(spinnerObj.getModel().getValue()));
+                mandelPanel.repaint();
+            }
+        });
+        bottomPanel.add(iterSpinner);
         cp.add(bottomPanel, BorderLayout.SOUTH);
 
         setPreferredSize(new Dimension(800, 800));

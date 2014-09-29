@@ -19,6 +19,8 @@ package mandelscape;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.util.Random;
 import javax.swing.JPanel;
 
 /**
@@ -37,6 +39,15 @@ public class MandelPanel extends JPanel {
         this.ciMin = ciMin;
         this.ciMax = ciMax;
         this.maxIter = maxIter;
+    }
+
+    /**
+     * Set maximum number of iterations to different value.
+     * 
+     * @param newMaxIter 
+     */
+    public void setMaxIter(int newMaxIter) {
+        maxIter = newMaxIter;
     }
     
     /**
@@ -88,17 +99,22 @@ public class MandelPanel extends JPanel {
 
         float relIter = iter/(float)maxIter;
 
-        return Color.getHSBColor((float)(0.5 + (float)Math.pow(relIter,0.2) % 1.0), 1, 1-relIter);
+        return Color.getHSBColor((float)(0.5 + (float)Math.pow(relIter,0.5) % 1.0), 1, 1-relIter);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
 
+        Random random = new Random();
+
+        double dcr = (crMax-crMin)/((double)getWidth());
+        double dci = (ciMax-ciMin)/((double)getHeight());
+
         for (int x=0; x<getWidth(); x++) {
             for (int y=0; y<getHeight(); y++) {
 
-               double cr = crMin + (crMax-crMin)*x/((double)getWidth());
-               double ci = ciMin + (ciMax-ciMin)*y/((double)getHeight());
+               double cr = crMin + dcr*x + 0.1*dcr*(random.nextDouble()-0.5);
+               double ci = ciMin + dci*y + 0.1*dcr*(random.nextDouble()-0.5);
 
                 int iter = getEscapeIters(cr, ci);
 
