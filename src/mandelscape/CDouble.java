@@ -25,40 +25,97 @@ public class CDouble {
 
     public double real, imag;
 
+    /**
+     * Origin of the complex plane.
+     */
     public static CDouble ZERO = new CDouble(0, 0);
+
+    /**
+     * One as a complex number.
+     */
     public static CDouble ONE = new CDouble(1, 0);
+
+    /**
+     * The imaginary unit.
+     */
     public static CDouble J = new CDouble(0, 1);
 
+    /**
+     * Create a new complex number with the given real and imaginary
+     * parts.
+     * 
+     * @param real
+     * @param imag 
+     */
     public CDouble(double real, double imag) {
         this.real = real;
         this.imag = imag;
     }
 
+    /**
+     * Add two complex numbers together.
+     * 
+     * @param arg
+     * @return new complex number
+     */
     public CDouble add(CDouble arg) {
         return new CDouble(real + arg.real, imag + arg.imag);
     }
 
+    /**
+     * Multiply two complex numbers together.
+     * 
+     * @param arg
+     * @return new complex number
+     */
     public CDouble mul(CDouble arg) {
         return new CDouble(real*arg.real - imag*arg.imag,
             imag*arg.real + real*arg.imag);
     }
 
+    /**
+     * Square this complex number.
+     * 
+     * @return new complex number
+     */
     public CDouble squared() {
         return mul(this);
     }
 
+    /**
+     * Scale this complex number by a real factor.
+     * 
+     * @param arg
+     * @return new complex number
+     */
     public CDouble scale(double arg) {
         return new CDouble(arg*real, arg*imag);
     }
 
+    /**
+     * Return the square of the absolute value of this complex number.
+     * 
+     * @return result
+     */
     public double abs2() {
         return real*real + imag*imag;
     }
 
+    /**
+     * Return the absolute value of this complex number.
+     * 
+     * @return result
+     */
     public double abs() {
         return Math.sqrt(abs());
     }
 
+    /**
+     * Test to see whether two complex numbers are equal.
+     * 
+     * @param obj
+     * @return True if both the real and imaginary components are equal.
+     */
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof CDouble) {

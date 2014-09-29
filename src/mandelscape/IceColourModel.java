@@ -19,6 +19,7 @@ package mandelscape;
 import java.awt.Color;
 
 /**
+ * Simple colour model that looks icy.
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */

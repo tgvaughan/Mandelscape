@@ -22,7 +22,10 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Model for Mandelbrot set.
+ * Model for the Mandelbrot set.  Contains the computed escape iteration
+ * counts for a chosen region of the set, and allows zooming of this region.
+ * Provides methods for obtaining a rendered image of this region under
+ * a chosen colour model.
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
@@ -41,6 +44,14 @@ public class MandelModel {
     private int [] iters;
     private int width, height;
 
+    /**
+     * Create a new MandelModel with the specified initial maximum iteration
+     * count, width and height.
+     * 
+     * @param maxIter
+     * @param width
+     * @param height 
+     */
     public MandelModel(int maxIter, int width, int height) {
         this.maxIter = maxIter;
 
@@ -54,21 +65,38 @@ public class MandelModel {
         this.ciMax = ci0Max;
     }
 
+    /**
+     * Add a listener for changes in the MandelModel.
+     * 
+     * @param listener 
+     */
     public void addChangeListener(MandelModelChangeListener listener) {
         listeners.add(listener);
     }
 
+    /**
+     * Let any listeners know that the model has changed.
+     */
     private void fireModelChangedEvent() {
         for (MandelModelChangeListener listener : listeners)
             listener.modelHasChanged();
     }
 
+    /**
+     * Set the maximum number of iterations to perform when estimating
+     * boundary escape rate.
+     * 
+     * @param newMaxIter 
+     */
     public void setMaxIter(int newMaxIter) {
         maxIter = newMaxIter;
 
         update();
     }
 
+    /**
+     * Reset zoom to default.
+     */
     public void resetZoom() {
         crMin = cr0Min;
         crMax = cr0Max;
@@ -78,10 +106,25 @@ public class MandelModel {
         update();
     }
 
+    /**
+     * Zoom in/out, keeping the complex number associated with the pixel
+     * specified by centrex and centrey the same.
+     *
+     * @param centrex
+     * @param centrey
+     * @param factor zoom factor: &lt;1 zooms out, &gt;1 zooms in.
+     */
     public void zoom(int centrex, int centrey, double factor) {
         zoom(getPoint(centrex, centrey), factor);
     }
 
+    /**
+     * Zoom in/out, keeping the specified complex number "centre" at the same
+     * relative distance to the region boundaries.
+     * 
+     * @param centre
+     * @param factor zoom factor: &lt;1 zooms out, &gt;1 zooms in.
+     */
     public void zoom(CDouble centre, double factor) {
         double crMinPrime = crMin/factor - centre.real*(1.0/factor-1);
         double crMaxPrime = crMinPrime + (crMax-crMin)/factor;
@@ -97,6 +140,12 @@ public class MandelModel {
     }
 
 
+    /**
+     * Set the dimension of the pixel grid.
+     * 
+     * @param width
+     * @param height 
+     */
     public void setDimension(int width, int height) {
         this.width = width;
         this.height = height;
@@ -137,11 +186,28 @@ public class MandelModel {
         return -1;
     }
 
+    /**
+     * Get complex number associated with pixel grid coordinates (x,y).
+     * 
+     * @param x
+     * @param y
+     * @return complex number
+     */
     public CDouble getPoint(int x, int y) {
         return new CDouble(crMin + (crMax-crMin)*x/((double)width),
             ciMin + (ciMax-ciMin)*y/((double)height));
     }
 
+    /**
+     * Get complex number associated with pixel grid coordinates (x,y), but
+     * with a random jitter to avoid aliasing effects.
+     * 
+     * @param x
+     * @param y
+     * @param mag magnitude of jitter
+     * @param random instance of Random
+     * @return complex number
+     */
     public CDouble getPointJittered(int x, int y, double mag, Random random) {
         double dcr = (crMax-crMin)/((double)width);
         double dci = (ciMax-ciMin)/((double)height);
@@ -163,6 +229,9 @@ public class MandelModel {
         return image;
     }
 
+    /**
+     * Compute boundary escape iteration counts for each pixel in region.
+     */
     public void update() {
         Random random = new Random();
 

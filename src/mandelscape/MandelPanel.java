@@ -20,12 +20,16 @@ import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import javax.swing.JPanel;
 
 /**
+ * Component which paints the Mandelbrot set as defined by the
+ * chosen MandelModel.
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
@@ -68,6 +72,34 @@ public class MandelPanel extends JPanel {
                     // Scroll up (zoom in)
 
                     model.zoom(point.x, point.y, 1.2);
+                }
+            }
+        });
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                switch(e.getButton()) {
+                    case MouseEvent.BUTTON1:
+                        if (e.getClickCount()==1) {
+                            // Single left click: Zoom in
+                            Point point = e.getPoint();
+                            model.zoom(point.x, point.y, 1.2);
+                        } else {
+                            // Double right click: Reset zoom
+                            model.resetZoom();
+                        }
+                        break;
+
+                    case MouseEvent.BUTTON3:
+                        if (e.getClickCount() == 1) {
+                            // Single left click: Zoom in
+                            Point point = e.getPoint();
+                            model.zoom(point.x, point.y, 0.8);
+                        }
+                        break;
+
+                    default:
                 }
             }
         });

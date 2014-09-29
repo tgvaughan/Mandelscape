@@ -19,6 +19,7 @@ package mandelscape;
 import java.awt.Color;
 
 /**
+ * Simple colour model which gives a "rainbow" effect.
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
