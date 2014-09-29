@@ -16,6 +16,8 @@
  */
 package mandelscape;
 
+import java.util.Random;
+
 /**
  * Model for Mandelbrot set.
  *
@@ -64,7 +66,60 @@ public class MandelModel {
         iters = new int[width*height];
     }
 
-    public void update() {
+    /**
+     * Iterate z_{n+1} = z_{n}^2 + c to determine whether complex number c
+     * is in the Mandelbrot set or not.  (Values of c which remain bounded
+     * after an infinite number of iterations are in the set, all others
+     * are not.  We use a finite number of iterations to approximately
+     * determine membership.)
+     * 
+     * This function returns the number of iterations taken to escape the
+     * boundary |z|=1, or -1 if z remained bounded for maxIter iterations.
+     * 
+     * @param cr
+     * @param ci
+     * @return 
+     */
+    private int getEscapeIters(CDouble c) {
 
+        CDouble z = CDouble.ZERO;
+
+        for (int i=0; i<maxIter; i++) {
+
+            // Update z:
+            z = z.squared().add(c);
+
+            // Check for boundary escape
+            if (z.abs2() > 10.0)
+                return i;
+        }
+
+        // No boundary escape within chosen number of iterations.
+        return -1;
+    }
+
+    public CDouble getPoint(int x, int y) {
+        return new CDouble(crMin + (crMax-crMin)*x/((double)width),
+            ciMin + (ciMax-ciMin)*y/((double)height));
+    }
+
+    public CDouble getPointJittered(int x, int y, double mag, Random random) {
+        double dcr = (crMax-crMin)/((double)width);
+        double dci = (ciMax-ciMin)/((double)height);
+
+        return new CDouble(crMin + dcr*(x + mag*(random.nextDouble()-0.5)),
+            ciMin + dci*(y + mag*(random.nextDouble()-0.5)));
+    }
+
+    public void update() {
+        Random random = new Random();
+
+        for (int x=0; x<width; x++) {
+            for (int y=0; y<height; y++) {
+
+                CDouble c = getPointJittered(x, y, 0.1, random);
+                iters[x*height + y] = getEscapeIters(c);
+            }
+        }
     }
 }
