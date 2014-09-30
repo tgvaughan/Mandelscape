@@ -72,7 +72,7 @@ public class MandelscapeApp extends JFrame {
         // Set up components along bottom:
 
         JPanel bottomPanel = new JPanel();
-        bottomPanel.add(new JLabel("Colour model:"));
+        bottomPanel.add(new JLabel("Col. model:"));
         Object[] colourModels = {new RainbowColourModel(), new IceColourModel() };
         JComboBox colourModelComboBox = new JComboBox(colourModels);
         colourModelComboBox.addActionListener(new ActionListener() {
@@ -84,7 +84,7 @@ public class MandelscapeApp extends JFrame {
         });
         bottomPanel.add(colourModelComboBox);
 
-        bottomPanel.add(new JLabel("Maximum number of iterations: "));
+        bottomPanel.add(new JLabel("Max iter: "));
         JSpinner iterSpinner = new JSpinner(new SpinnerNumberModel(500, 100, 10000, 100));
         iterSpinner.addChangeListener(new ChangeListener() {
             @Override
