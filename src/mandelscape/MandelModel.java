@@ -19,7 +19,6 @@ package mandelscape;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /**
  * Model for the Mandelbrot set.  Contains the computed escape iteration
@@ -74,6 +73,14 @@ public class MandelModel {
         listeners.add(listener);
     }
 
+    /**
+     * Remove a model change listener.
+     * 
+     * @param listener 
+     */
+    public void removeChangeListener(MandelModelChangeListener listener) {
+        listeners.remove(listener);
+    }
     /**
      * Let any listeners know that the model has changed.
      */

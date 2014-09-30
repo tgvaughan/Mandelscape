@@ -29,8 +29,8 @@ public class IceColourModel extends MandelColourModel {
         this(500, 0);
     }
 
-    public IceColourModel(int phase, int offset) {
-        this.period = phase;
+    public IceColourModel(int period, int offset) {
+        this.period = period;
         this.offset = offset;
     }
 

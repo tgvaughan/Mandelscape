@@ -38,6 +38,7 @@ public class MandelPanel extends JPanel {
 
     private final MandelModel model;
     private MandelColourModel colourModel;
+    private ColourModelChangeListener colourChangeListener;
 
     public MandelPanel(final MandelModel model, MandelColourModel colourModel) {
         this.model = model; 
@@ -49,12 +50,13 @@ public class MandelPanel extends JPanel {
         });
 
         this.colourModel = colourModel;
-        colourModel.addChangeListener(new ColourModelChangeListener() {
+        colourChangeListener = new ColourModelChangeListener() {
             @Override
             public void modelHasChanged() {
                 repaint();
             }
-        });
+        };
+        this.colourModel.addChangeListener(colourChangeListener);
 
         addComponentListener(new ComponentAdapter() {
             @Override
@@ -139,7 +141,9 @@ public class MandelPanel extends JPanel {
     }
 
     public void setColourModel(MandelColourModel colourModel) {
+        this.colourModel.removeChangeListener(colourChangeListener);
         this.colourModel = colourModel;
+        this.colourModel.addChangeListener(colourChangeListener);
         repaint();
     }
 

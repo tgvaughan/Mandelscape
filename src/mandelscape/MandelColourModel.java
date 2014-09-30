@@ -58,13 +58,22 @@ public abstract class MandelColourModel {
 
     public abstract Color iterToColor(int iter);
     
-        /**
+    /**
      * Add a listener for changes in the MandelModel.
      * 
      * @param listener 
      */
     public void addChangeListener(ColourModelChangeListener listener) {
         listeners.add(listener);
+    }
+
+    /**
+     * Remove a listener.
+     * 
+     * @param listener 
+     */
+    public void removeChangeListener(ColourModelChangeListener listener) {
+        listeners.remove(listener);
     }
 
     /**

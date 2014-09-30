@@ -55,6 +55,8 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  */
 public class MandelscapeApp extends JFrame {
 
+    private final MandelPanel mandelPanel;
+
     public MandelscapeApp() {
         setTitle("MandelView - Mandelbrot Set Viewer");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -63,9 +65,10 @@ public class MandelscapeApp extends JFrame {
         // Set up main viewer model and panel:
 
         final MandelModel model = new MandelModel(500, 800, 800);
-        MandelColourModel colourModel = new RainbowColourModel();
+        Object[] colourModels = {new RainbowColourModel(), new IceColourModel() };
+        MandelColourModel colourModel = (MandelColourModel)colourModels[0];
 
-        final MandelPanel mandelPanel = new MandelPanel(model, colourModel);
+        mandelPanel = new MandelPanel(model, colourModel);
         cp.add(mandelPanel, BorderLayout.CENTER);
 
 
@@ -73,7 +76,6 @@ public class MandelscapeApp extends JFrame {
 
         JPanel bottomPanel = new JPanel();
         bottomPanel.add(new JLabel("Col. model:"));
-        Object[] colourModels = {new RainbowColourModel(), new IceColourModel() };
         JComboBox colourModelComboBox = new JComboBox(colourModels);
         colourModelComboBox.addActionListener(new ActionListener() {
             @Override
