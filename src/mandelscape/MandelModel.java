@@ -19,6 +19,8 @@ package mandelscape;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import javax.swing.SwingWorker;
 
 /**
@@ -44,7 +46,8 @@ public class MandelModel {
     private int [] iters;
     private int width, height;
 
-    private SwingWorker worker;
+    private SwingWorker[] workers;
+    private ExecutorService threadPool = Executors.newFixedThreadPool(4);
 
     /**
      * Create a new MandelModel with the specified initial maximum iteration
@@ -264,70 +267,80 @@ public class MandelModel {
         return image;
     }
 
+    
     /**
      * Compute boundary escape iteration counts for each pixel in region.
      */
     public void update() {
 
-        if (worker != null)
-            worker.cancel(true);
+        int poolGridSide = 2;
+        int poolSize = poolGridSide*poolGridSide;
+        
+        if (workers == null)
+            workers = new SwingWorker[poolSize];
+        else
+            for (SwingWorker worker : workers)
+                worker.cancel(true);
+        
+        for (int i=0; i<poolGridSide; i++) {
+            for (int j=0; j<poolGridSide; j++) {
+                int threadIdx = i*poolGridSide + j;
 
-        worker = new SwingWorker<Void,Void>() {
+                final int xmin = i*width/poolGridSide;
+                final int xmax = (i+1)*width/poolGridSide;
+                final int ymin = j*height/poolGridSide;
+                final int ymax = (j+1)*height/poolGridSide;
 
-            @Override
-            protected Void doInBackground() throws Exception {
-
-                System.out.println(Thread.currentThread().getName() + ": START");
-                
-                for (int bsize=64; bsize>0; bsize/=2) {
-                    for (int x=0; x<width; x+=bsize) {
-                        for (int y=0; y<height; y+=bsize) {
-
-                             if (isCancelled()) {
-                                 System.out.println(Thread.currentThread().getName() + ": CANCELLED");
-                                 return null;
-                             }
+                workers[threadIdx] = new SwingWorker<Void,Void>() {
+                    
+                    @Override
+                    protected Void doInBackground() throws Exception {
+                        for (int bsize=64; bsize>0; bsize/=2) {
+                            for (int x=xmin; x<xmax; x+=bsize) {
+                                for (int y=ymin; y<ymax; y+=bsize) {
+                                    
+                                    if (isCancelled())
+                                        return null;
+                                    
+                                    CDouble c = getPointJittered(x, y, 0.1);
+                                    int escapeIters;
+                                    if (bsize<64 && x % (bsize*2) == 0 && y % (bsize*2) == 0)
+                                        escapeIters = iters[x*height + y];
+                                    else {
+                                        escapeIters = getEscapeIters(c);
+                                        iters[x*height + y] = escapeIters;
+                                    }
+                                    
+                                    for (int xb=x; xb<x+bsize && xb<width; xb++) {
+                                        for (int yb=y; yb<y+bsize && yb<height; yb++) {
+                                            if (xb == x && yb==y)
+                                                continue;
+                                            
+                                            iters[xb*height + yb] = escapeIters;
+                                        }
+                                    }
+                                }
+                            }
+                            
+                            publish((Void) null);
+                        }
                         
-                             CDouble c = getPointJittered(x, y, 0.1);
-                             int escapeIters;
-                             if (bsize<64 && x % (bsize*2) == 0 && y % (bsize*2) == 0)
-                                 escapeIters = iters[x*height + y];
-                             else {
-                                 escapeIters = getEscapeIters(c);
-                                 iters[x*height + y] = escapeIters;
-                             }
+                        return null;
+                    }
+                    
+                    @Override
+                    protected void process(List<Void> chunks) {
+                        fireModelChangedEvent();
+                    }
+                    
+                    @Override
+                    protected void done() {
+                        fireModelChangedEvent();
+                    }
+                };
 
-                             for (int xb=x; xb<x+bsize && xb<width; xb++) {
-                                 for (int yb=y; yb<y+bsize && yb<height; yb++) {
-                                     if (xb == x && yb==y)
-                                         continue;
-
-                                    iters[xb*height + yb] = escapeIters;
-                                 }
-                             }
-                         }
-                     }
-
-                    publish((Void) null);
-                }
-
-                System.out.println(Thread.currentThread().getName() + ": FINISHED");
-
-                return null;
+                threadPool.submit(workers[threadIdx]);
             }
-
-            @Override
-            protected void process(List<Void> chunks) {
-                fireModelChangedEvent();
-            }
-
-            @Override
-            protected void done() {
-                System.out.println(Thread.currentThread().getName() + ": DONE");
-                fireModelChangedEvent();
-            }
-        };
-
-        worker.execute();
+        }
     }
 }
