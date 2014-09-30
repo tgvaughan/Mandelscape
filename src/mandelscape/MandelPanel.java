@@ -22,6 +22,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
@@ -77,6 +78,10 @@ public class MandelPanel extends JPanel {
         });
 
         addMouseListener(new MouseAdapter() {
+
+            boolean dragging = false;
+            Point lastPoint; 
+
             @Override
             public void mouseClicked(MouseEvent e) {
                 switch(e.getButton()) {
@@ -102,6 +107,27 @@ public class MandelPanel extends JPanel {
                     default:
                 }
             }
+        });
+
+        addMouseMotionListener(new MouseMotionAdapter() {
+            Point lastPoint;
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                Point thisPoint = e.getPoint();
+
+                if (lastPoint != null)
+                    model.pan(thisPoint.x - lastPoint.x,
+                        thisPoint.y - lastPoint.y);
+
+                lastPoint = thisPoint;
+            }
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                lastPoint = e.getPoint();
+            }
+            
         });
     }
 

@@ -139,6 +139,26 @@ public class MandelModel {
         update();
     }
 
+    /**
+     * Shift view by chosen offset.
+     * 
+     * @param dx horizontal pixel offset
+     * @param dy vertical pixel offset
+     */
+    public void pan(int dx, int dy) {
+        double crMinPrime = crMin - dx*(crMax-crMin)/width;
+        double crMaxPrime = crMax - dx*(crMax-crMin)/width;
+        double ciMinPrime = ciMin - dy*(ciMax-ciMin)/height;
+        double ciMaxPrime = ciMax - dy*(ciMax-ciMin)/height;
+
+        crMin = crMinPrime;
+        crMax = crMaxPrime;
+        ciMin = ciMinPrime;
+        ciMax = ciMaxPrime;
+
+        update();
+    }
+
 
     /**
      * Set the dimension of the pixel grid.
@@ -194,8 +214,8 @@ public class MandelModel {
      * @return complex number
      */
     public CDouble getPoint(int x, int y) {
-        return new CDouble(crMin + (crMax-crMin)*x/((double)width),
-            ciMin + (ciMax-ciMin)*y/((double)height));
+        return new CDouble(crMin + x*(crMax-crMin)/width,
+            ciMin + y*(ciMax-ciMin)/height);
     }
 
     /**
