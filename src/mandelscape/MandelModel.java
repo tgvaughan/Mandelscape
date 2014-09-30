@@ -307,11 +307,18 @@ public class MandelModel {
                              }
                          }
                      }
+
+                    publish((Void) null);
                 }
 
                 System.out.println(Thread.currentThread().getName() + ": FINISHED");
 
                 return null;
+            }
+
+            @Override
+            protected void process(List<Void> chunks) {
+                fireModelChangedEvent();
             }
 
             @Override
