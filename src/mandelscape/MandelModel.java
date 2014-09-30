@@ -225,15 +225,14 @@ public class MandelModel {
      * @param x
      * @param y
      * @param mag magnitude of jitter
-     * @param random instance of Random
      * @return complex number
      */
-    public CDouble getPointJittered(int x, int y, double mag, Random random) {
+    public CDouble getPointJittered(int x, int y, double mag) {
         double dcr = (crMax-crMin)/((double)width);
         double dci = (ciMax-ciMin)/((double)height);
 
-        return new CDouble(crMin + dcr*(x + mag*(random.nextDouble()-0.5)),
-            ciMin + dci*(y + mag*(random.nextDouble()-0.5)));
+        return new CDouble(crMin + dcr*(x + mag*(Math.random()-0.5)),
+            ciMin + dci*(y + mag*(Math.random()-0.5)));
     }
 
     public BufferedImage getImage(MandelColourModel colourModel) {
@@ -253,12 +252,10 @@ public class MandelModel {
      * Compute boundary escape iteration counts for each pixel in region.
      */
     public void update() {
-        Random random = new Random();
-
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
 
-                CDouble c = getPointJittered(x, y, 0.1, random);
+                CDouble c = getPointJittered(x, y, 0.1);
                 iters[x*height + y] = getEscapeIters(c);
             }
         }
