@@ -147,6 +147,10 @@ public class MandelPanel extends JPanel {
         repaint();
     }
 
+    public MandelColourModel getColourModel() {
+        return this.colourModel;
+    }
+
     public BufferedImage getImage() {
         return model.getImage(colourModel);
     }
