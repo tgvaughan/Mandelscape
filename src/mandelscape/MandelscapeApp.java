@@ -65,7 +65,7 @@ public class MandelscapeApp extends JFrame {
 
         // Set up main viewer model and panel:
 
-        final MandelModel model = new MandelModel(500, 800, 800);
+        final MandelModel model = new MandelModel(500, 800, 800, 2);
         Object[] colourModels = {new RainbowColourModel(), new IceColourModel() };
         MandelColourModel colourModel = (MandelColourModel)colourModels[0];
 
@@ -106,6 +106,17 @@ public class MandelscapeApp extends JFrame {
             }
         });
         bottomPanel.add(zoomResetButton);
+
+        bottomPanel.add(new JLabel("Worker grid side:"));
+        JSpinner workerGridSideSpinner = new JSpinner(new SpinnerNumberModel(2, 1, 3, 1));
+        workerGridSideSpinner.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JSpinner spinnerObj = (JSpinner)e.getSource();
+                model.setWorkerGridSide((Integer)spinnerObj.getValue());
+            }
+        });
+        bottomPanel.add(workerGridSideSpinner);
 
         cp.add(bottomPanel, BorderLayout.SOUTH);
 

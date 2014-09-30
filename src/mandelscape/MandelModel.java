@@ -46,8 +46,10 @@ public class MandelModel {
     private int [] iters;
     private int width, height;
 
-    private SwingWorker[] workers;
-    private ExecutorService threadPool = Executors.newFixedThreadPool(4);
+    private final List<SwingWorker> workers = new ArrayList<SwingWorker>();
+    private final ExecutorService threadPool = Executors.newFixedThreadPool(4);
+    private int workerGridSide;
+    
 
     /**
      * Create a new MandelModel with the specified initial maximum iteration
@@ -56,13 +58,16 @@ public class MandelModel {
      * @param maxIter
      * @param width
      * @param height 
+     * @param workerGridSide Controls number of SwingWorkers to use in calculation.
      */
-    public MandelModel(int maxIter, int width, int height) {
+    public MandelModel(int maxIter, int width, int height, int workerGridSide) {
         this.maxIter = maxIter;
 
         this.width = width;
         this.height = height;
         this.iters = new int[width*height];
+
+        this.workerGridSide = workerGridSide;
 
         this.crMin = cr0Min;
         this.crMax = cr0Max;
@@ -187,6 +192,12 @@ public class MandelModel {
         update();
     }
 
+    public void setWorkerGridSide(int workerGridSide) {
+        this.workerGridSide = workerGridSide;
+
+        update();
+    }
+
     /**
      * Iterate z_{n+1} = z_{n}^2 + c to determine whether complex number c
      * is in the Mandelbrot set or not.  (Values of c which remain bounded
@@ -267,31 +278,42 @@ public class MandelModel {
         return image;
     }
 
+    long startTime;
+    int finishedWorkerCount;
+    public void calculationTimerStart() {
+        startTime = System.currentTimeMillis();
+        finishedWorkerCount = 0;
+    }
+
+    public synchronized void calculationTimerStop() {
+        finishedWorkerCount += 1;
+        if (finishedWorkerCount==workers.size()) {
+            long finishTime = System.currentTimeMillis();
+            System.out.println("Render completed in "
+                + (finishTime-startTime)/1000.0 + " seconds");
+        }
+    }
     
     /**
      * Compute boundary escape iteration counts for each pixel in region.
      */
     public void update() {
 
-        int poolGridSide = 2;
-        int poolSize = poolGridSide*poolGridSide;
-        
-        if (workers == null)
-            workers = new SwingWorker[poolSize];
-        else
-            for (SwingWorker worker : workers)
-                worker.cancel(true);
-        
-        for (int i=0; i<poolGridSide; i++) {
-            for (int j=0; j<poolGridSide; j++) {
-                int threadIdx = i*poolGridSide + j;
+        for (SwingWorker worker : workers)
+            worker.cancel(true);
+        workers.clear();
 
-                final int xmin = i*width/poolGridSide;
-                final int xmax = (i+1)*width/poolGridSide;
-                final int ymin = j*height/poolGridSide;
-                final int ymax = (j+1)*height/poolGridSide;
+        calculationTimerStart();
 
-                workers[threadIdx] = new SwingWorker<Void,Void>() {
+        for (int i=0; i<workerGridSide; i++) {
+            for (int j=0; j<workerGridSide; j++) {
+
+                final int xmin = i*width/workerGridSide;
+                final int xmax = (i+1)*width/workerGridSide;
+                final int ymin = j*height/workerGridSide;
+                final int ymax = (j+1)*height/workerGridSide;
+
+                workers.add(new SwingWorker<Void,Void>() {
                     
                     @Override
                     protected Void doInBackground() throws Exception {
@@ -336,10 +358,13 @@ public class MandelModel {
                     @Override
                     protected void done() {
                         fireModelChangedEvent();
-                    }
-                };
 
-                threadPool.submit(workers[threadIdx]);
+                        if (!isCancelled())
+                            calculationTimerStop();
+                    }
+                });
+
+                threadPool.submit(workers.get(workers.size()-1));
             }
         }
     }
