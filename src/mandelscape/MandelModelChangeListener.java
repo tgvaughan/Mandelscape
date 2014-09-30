@@ -23,6 +23,6 @@ package mandelscape;
  */
 public interface MandelModelChangeListener {
 
-    public abstract void modelHasChanged();
+    public void modelHasChanged();
     
 }

@@ -241,7 +241,7 @@ public class MandelModel {
 
         for (int x=0; x<width; x++) {
             for (int y=0; y<height; y++) {
-                image.setRGB(x, y, colourModel.iterToColor(iters[x*height + y], maxIter).getRGB());
+                image.setRGB(x, y, colourModel.iterToColor(iters[x*height + y]).getRGB());
             }
         }
 

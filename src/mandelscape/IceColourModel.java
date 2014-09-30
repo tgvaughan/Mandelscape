@@ -23,7 +23,16 @@ import java.awt.Color;
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
-public class IceColourModel implements MandelColourModel {
+public class IceColourModel extends MandelColourModel {
+
+    public IceColourModel() {
+        this(500, 0);
+    }
+
+    public IceColourModel(int phase, int offset) {
+        this.period = phase;
+        this.offset = offset;
+    }
 
     @Override
     public String toString() {
@@ -31,15 +40,15 @@ public class IceColourModel implements MandelColourModel {
     }
 
     @Override
-    public Color iterToColor(int iter, int maxIter) {
+    public Color iterToColor(int iter) {
         
         // Colour the mandelbrot set black
         if (iter<0)
             return Color.BLACK;
 
-        float relIter = iter/(float)maxIter;
+        double phase = (iter + offset)/(double)period  % 1.0;
 
-        return Color.getHSBColor((float)0.5, 1, (float)Math.pow(relIter, 0.2));
+        return Color.getHSBColor((float)0.5, 1, (float)Math.pow(phase, 0.2));
     }
     
 }

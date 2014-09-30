@@ -17,18 +17,61 @@
 package mandelscape;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * Simple interface for objects that describe a mapping from iteration
+ * Class of objects that describe a mapping from iteration
  * counts to colours.
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
-public interface MandelColourModel {
+public abstract class MandelColourModel {
+
+    int period, offset;
+
+    private final List<ColourModelChangeListener> listeners =
+        new ArrayList<ColourModelChangeListener>();
 
     @Override
-    public String toString();
+    public abstract String toString();
 
-    public Color iterToColor(int iter, int maxIter);
+    public int getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(int period) {
+        this.period = period;
+
+        fireModelChangedEvent();
+    }
+
+    public int getOffset() {
+        return offset;
+    }
+
+    public void setOffset(int offset) {
+        this.offset = offset;
+
+        fireModelChangedEvent();
+    }
+
+    public abstract Color iterToColor(int iter);
     
+        /**
+     * Add a listener for changes in the MandelModel.
+     * 
+     * @param listener 
+     */
+    public void addChangeListener(ColourModelChangeListener listener) {
+        listeners.add(listener);
+    }
+
+    /**
+     * Let any listeners know that the model has changed.
+     */
+    private void fireModelChangedEvent() {
+        for (ColourModelChangeListener listener : listeners)
+            listener.modelHasChanged();
+    }
 }

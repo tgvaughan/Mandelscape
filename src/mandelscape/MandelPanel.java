@@ -41,8 +41,15 @@ public class MandelPanel extends JPanel {
 
     public MandelPanel(final MandelModel model, MandelColourModel colourModel) {
         this.model = model; 
-        this.colourModel = colourModel;
         model.addChangeListener(new MandelModelChangeListener() {
+            @Override
+            public void modelHasChanged() {
+                repaint();
+            }
+        });
+
+        this.colourModel = colourModel;
+        colourModel.addChangeListener(new ColourModelChangeListener() {
             @Override
             public void modelHasChanged() {
                 repaint();
