@@ -124,7 +124,7 @@ public class MandelscapeApp extends JFrame {
                 JFileChooser fc = new JFileChooser();
                 fc.setFileFilter(new FileNameExtensionFilter("PNG image file", "png"));
                 fc.setSelectedFile(new File("mandel.png"));
-                if (fc.showSaveDialog(getParent()) == JFileChooser.APPROVE_OPTION) {
+                if (fc.showSaveDialog(mandelPanel) == JFileChooser.APPROVE_OPTION) {
                     try {
                         BufferedImage image = mandelPanel.getImage();
                         File output = fc.getSelectedFile();
@@ -146,7 +146,7 @@ public class MandelscapeApp extends JFrame {
         fileExitMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (JOptionPane.showConfirmDialog(getParent(),
+                if (JOptionPane.showConfirmDialog(mandelPanel,
                     "Really exit from Mandelscape?",
                     "Please confirm",
                     JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
@@ -165,13 +165,14 @@ public class MandelscapeApp extends JFrame {
         helpControlsMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(getParent(),
+                JOptionPane.showMessageDialog(mandelPanel,
                     "<html>"
                         + "<table style='font-weight: normal; text-align: left;'>"
                         + "<tr style='border-bottom: 1px solid black; font-weight: bold;'>"
                         + "<th><b>Mouse Action</b></th><th><b>Result</b></th></tr>"
                         + "<tr><td>single left click</td><td>zoom in</td></tr>"
                         + "<tr>single right click</td><td>zoom out</td></tr>"
+                        + "<tr>scroll wheel</td><td>zoom in/out</td></tr>"
                         + "<tr>double left click</td><td>reset zoom</td></tr>"
                         + "</table>"
                         + "</html>",
@@ -184,7 +185,7 @@ public class MandelscapeApp extends JFrame {
         helpAboutMenuItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                JOptionPane.showMessageDialog(getParent(),
+                JOptionPane.showMessageDialog(mandelPanel,
                     "<html>"
                         + "<body style='font-weight:normal;'"
                         + "<h2>Mandelscape 1.0</h2>"
