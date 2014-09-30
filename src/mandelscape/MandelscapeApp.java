@@ -173,6 +173,7 @@ public class MandelscapeApp extends JFrame {
                         + "<tr><td>single left click</td><td>zoom in</td></tr>"
                         + "<tr>single right click</td><td>zoom out</td></tr>"
                         + "<tr>scroll wheel</td><td>zoom in/out</td></tr>"
+                        + "<tr>left click and drag</td><td>pan view</td></tr>"
                         + "<tr>double left click</td><td>reset zoom</td></tr>"
                         + "</table>"
                         + "</html>",
