@@ -19,8 +19,11 @@ package mandelscape;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingWorker;
 
 /**
@@ -278,32 +281,25 @@ public class MandelModel {
         return image;
     }
 
-    long startTime;
-    int finishedWorkerCount;
-    public void calculationTimerStart() {
-        startTime = System.currentTimeMillis();
-        finishedWorkerCount = 0;
+    int workersActive;
+    public synchronized void decrementActiveWorkerCount() {
+        workersActive -= 1;
     }
 
-    public synchronized void calculationTimerStop() {
-        finishedWorkerCount += 1;
-        if (finishedWorkerCount==workers.size()) {
-            long finishTime = System.currentTimeMillis();
-            System.out.println("Render completed in "
-                + (finishTime-startTime)/1000.0 + " seconds");
-        }
-    }
-    
     /**
      * Compute boundary escape iteration counts for each pixel in region.
      */
     public void update() {
 
-        for (SwingWorker worker : workers)
+        for (SwingWorker worker : workers) {
             worker.cancel(true);
-        workers.clear();
+        }
 
-        calculationTimerStart();
+        while (workersActive>0) {
+            // Do nothing;
+        }
+
+        workers.clear();
 
         for (int i=0; i<workerGridSide; i++) {
             for (int j=0; j<workerGridSide; j++) {
@@ -358,9 +354,7 @@ public class MandelModel {
                     @Override
                     protected void done() {
                         fireModelChangedEvent();
-
-                        if (!isCancelled())
-                            calculationTimerStop();
+                        decrementActiveWorkerCount();
                     }
                 });
 
