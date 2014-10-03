@@ -188,6 +188,16 @@ public class MandelModel {
      * @param height 
      */
     public void setDimension(int width, int height) {
+
+        // Cancel workers and wait for them to finish up:
+        for (SwingWorker worker : workers) {
+            worker.cancel(true);
+        }
+
+        while (workersActive>0) {
+            // Do nothing;
+        }
+
         this.width = width;
         this.height = height;
         iters = new int[width*height];
