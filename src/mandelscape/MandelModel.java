@@ -242,6 +242,12 @@ public class MandelModel {
             ciMin + dci*(y + mag*(Math.random()-0.5)));
     }
 
+    /**
+     * Construct BufferedImage view of Mandelbrot set using chosen colour model.
+     *
+     * @param colourModel
+     * @return Image for painting on screen or writing to disk.
+     */
     public BufferedImage getImage(MandelColourModel colourModel) {
         BufferedImage image = new BufferedImage(width, height,
             BufferedImage.TYPE_INT_RGB);

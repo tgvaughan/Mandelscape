@@ -21,8 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Class of objects that describe a mapping from iteration
- * counts to colours.
+ * Class of objects that describe a mapping from iteration counts to colours.
+ * These objects are parameterized by two numbers: a "period" and an "offset".
+ * The period is the number of iterations required for the iteration to colour
+ * mapping to return to the same colour. The offset adjust the particular colour
+ * that a given iteration count will map to.
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
