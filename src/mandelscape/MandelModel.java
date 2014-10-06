@@ -19,6 +19,7 @@ package mandelscape;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingWorker;
 
 /**
  * Model for the Mandelbrot set.  Contains the computed escape iteration
@@ -42,6 +43,8 @@ public class MandelModel {
 
     private int [] iters;
     private int width, height;
+
+    private final List<SwingWorker> workers = new ArrayList<SwingWorker>();
 
     /**
      * Create a new MandelModel with the specified initial maximum iteration
@@ -195,11 +198,14 @@ public class MandelModel {
      * @param ci
      * @return 
      */
-    private int getEscapeIters(CDouble c) {
+    private int getEscapeIters(CDouble c) throws InterruptedException {
 
         CDouble z = CDouble.ZERO;
 
         for (int i=0; i<maxIter; i++) {
+
+            if (Thread.interrupted())
+                throw new InterruptedException();
 
             // Update z:
             z = z.squared().add(c);
@@ -261,18 +267,71 @@ public class MandelModel {
         return image;
     }
 
+    
     /**
      * Compute boundary escape iteration counts for each pixel in region.
      */
     public void update() {
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<height; y++) {
 
-                CDouble c = getPointJittered(x, y, 0.1);
-                iters[x*height + y] = getEscapeIters(c);
-            }
+        for (SwingWorker worker : workers)
+            worker.cancel(true);
+        workers.clear();
+
+        for (int widx = 0; widx<4; widx++) {
+
+            final int xmin=widx*width/4;
+            final int xmax=(widx+1)*width/4;
+
+            SwingWorker worker = new SwingWorker<Void,Void>() {
+
+                private void updateCore() throws InterruptedException {
+                    for (int b=64; b>0; b/=2) {
+                        for (int x=xmin; x<xmax; x+=b) {
+                            for (int y=0; y<height; y+=b) {
+                            
+                                CDouble c = getPointJittered(x, y, 0.1);
+                                int escapeIters;
+                                if (b<64 && x%(b*2)==0 && y%(b*2)==0)
+                                    escapeIters = iters[x*height + y];
+                                else
+                                    escapeIters = getEscapeIters(c);
+
+                                for (int xp=x; xp<x+b && xp<xmax; xp++) {
+                                    for (int yp=y; yp<y+b && yp<height; yp++) {
+                                        iters[xp*height + yp] = escapeIters;
+                                    }
+                                }
+                            }
+                            publish();
+                        }
+                    }
+                }
+
+                @Override
+                protected Void doInBackground() {
+                    try {
+                        updateCore();
+                    } catch (InterruptedException ex) {
+                    }
+                    return null;
+                }
+
+                @Override
+                protected void process(List chunks) {
+                    fireModelChangedEvent();
+                }
+
+                @Override
+                protected void done() {
+                    if (!isCancelled())
+                        fireModelChangedEvent();
+                }
+            };
+            workers.add(worker);
+            worker.execute();
+
+            //threadPool.submit(worker);
         }
 
-        fireModelChangedEvent();
     }
 }

@@ -19,8 +19,6 @@ package mandelscape;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.HeadlessException;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -31,6 +29,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -44,9 +43,9 @@ import javax.swing.JSpinner;
 import javax.swing.KeyStroke;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -54,9 +53,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
-public class MandelscapeApp extends JFrame {
+public class MandelscapeApp extends JFrame implements ActionListener {
 
     private final MandelPanel mandelPanel;
+    private Timer colourTimer;
 
     public MandelscapeApp() {
         setTitle("MandelView - Mandelbrot Set Viewer");
@@ -68,6 +68,7 @@ public class MandelscapeApp extends JFrame {
         final MandelModel model = new MandelModel(500, 800, 800);
         Object[] colourModels = {new RainbowColourModel(), new IceColourModel() };
         MandelColourModel colourModel = (MandelColourModel)colourModels[0];
+        colourTimer = new Timer(200, this);
 
         mandelPanel = new MandelPanel(model, colourModel);
         cp.add(mandelPanel, BorderLayout.CENTER);
@@ -86,6 +87,19 @@ public class MandelscapeApp extends JFrame {
             }
         });
         bottomPanel.add(colourModelComboBox);
+
+        JCheckBox checkBox = new JCheckBox("anim");
+        checkBox.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                JCheckBox checkBoxObj = (JCheckBox)e.getSource();
+                if (checkBoxObj.isSelected())
+                    colourTimer.start();
+                else
+                    colourTimer.stop();
+            }
+        });
+        bottomPanel.add(checkBox);
 
         bottomPanel.add(new JLabel("Max iter: "));
         JSpinner iterSpinner = new JSpinner(new SpinnerNumberModel(500, 100, 10000, 100));
@@ -223,6 +237,16 @@ public class MandelscapeApp extends JFrame {
         });
 
 
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        MandelColourModel cm = mandelPanel.getColourModel();
+
+        int offset = cm.getOffset();
+        int period = cm.getPeriod();
+
+        cm.setOffset((offset+10)%period);
     }
     
 }
