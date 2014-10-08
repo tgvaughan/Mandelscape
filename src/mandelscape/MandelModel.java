@@ -19,6 +19,7 @@ package mandelscape;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.SwingWorker;
 
 /**
  * Model for the Mandelbrot set.  Contains the computed escape iteration
@@ -195,11 +196,14 @@ public class MandelModel {
      * @param ci
      * @return 
      */
-    private int getEscapeIters(CDouble c) {
+    private int getEscapeIters(CDouble c) throws InterruptedException {
 
         CDouble z = CDouble.ZERO;
 
         for (int i=0; i<maxIter; i++) {
+
+            if (Thread.interrupted())
+                throw new InterruptedException();
 
             // Update z:
             z = z.squared().add(c);
@@ -261,18 +265,59 @@ public class MandelModel {
         return image;
     }
 
+    SwingWorker worker;
+
     /**
      * Compute boundary escape iteration counts for each pixel in region.
      */
     public void update() {
-        for (int x=0; x<width; x++) {
-            for (int y=0; y<height; y++) {
 
-                CDouble c = getPointJittered(x, y, 0.1);
-                iters[x*height + y] = getEscapeIters(c);
+        if (worker != null)
+            worker.cancel(true);
+
+        worker = new SwingWorker<Void,Void>() {
+
+            @Override
+            protected Void doInBackground() throws InterruptedException {
+                for (int bsize=64; bsize>0; bsize/=2) {
+                    for (int x=0; x<width; x+=bsize) {
+                        for (int y=0; y<height; y+=bsize) {
+                            
+                            int thisIters;
+                            if (bsize<64 && x%(bsize*2)==0 && y%(bsize*2)==0) 
+                                thisIters = iters[x*height + y];
+                            else {
+                                CDouble c = getPointJittered(x, y, 0.1);
+                                thisIters = getEscapeIters(c);
+                            }
+
+                            for (int xp=x; xp<x+bsize && xp<width; xp++) {
+                                for (int yp=y; yp<y+bsize && yp<height; yp++) {
+                                    iters[xp*height + yp] = thisIters;
+                                }
+                            }
+                        }
+                    }
+                    process(null);
+                }
+
+                return null;
             }
-        }
 
-        fireModelChangedEvent();
+            @Override
+            protected void process(List<Void> chunks) {
+                fireModelChangedEvent();
+            }
+
+            
+
+            @Override
+            protected void done() {
+                if (!isCancelled())
+                    fireModelChangedEvent();
+            }
+        };
+        worker.execute();
+
     }
 }
