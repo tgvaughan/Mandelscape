@@ -43,6 +43,7 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.KeyStroke;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
@@ -214,7 +215,13 @@ public class MandelscapeApp extends JFrame {
 
     public static void main(String[] args) {
 
-        new MandelscapeApp().setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new MandelscapeApp().setVisible(true);
+            }
+        });
+
 
     }
     
