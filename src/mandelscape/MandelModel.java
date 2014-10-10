@@ -265,59 +265,65 @@ public class MandelModel {
         return image;
     }
 
-    SwingWorker worker;
+    List<SwingWorker> workers = new ArrayList<SwingWorker>();
 
     /**
      * Compute boundary escape iteration counts for each pixel in region.
      */
     public void update() {
 
-        if (worker != null)
+        for (SwingWorker worker : workers)
             worker.cancel(true);
+        workers.clear();
 
-        worker = new SwingWorker<Void,Void>() {
+        int WMAX = 4;
 
-            @Override
-            protected Void doInBackground() throws InterruptedException {
-                for (int bsize=64; bsize>0; bsize/=2) {
-                    for (int x=0; x<width; x+=bsize) {
-                        for (int y=0; y<height; y+=bsize) {
-                            
-                            int thisIters;
-                            if (bsize<64 && x%(bsize*2)==0 && y%(bsize*2)==0) 
-                                thisIters = iters[x*height + y];
-                            else {
-                                CDouble c = getPointJittered(x, y, 0.1);
-                                thisIters = getEscapeIters(c);
-                            }
+        for (int widx=0; widx<WMAX; widx++) {
+            final int xmin = widx*width/WMAX;
+            final int xmax = (widx+1)*width/WMAX;
 
-                            for (int xp=x; xp<x+bsize && xp<width; xp++) {
-                                for (int yp=y; yp<y+bsize && yp<height; yp++) {
-                                    iters[xp*height + yp] = thisIters;
+            workers.add(new SwingWorker<Void,Void>() {
+                @Override
+                protected Void doInBackground() throws InterruptedException {
+                    for (int bsize=64; bsize>0; bsize/=2) {
+                        for (int x=xmin; x<xmax; x+=bsize) {
+                            for (int y=0; y<height; y+=bsize) {
+                                
+                                int thisIters;
+                                if (bsize<64 && x%(bsize*2)==0 && y%(bsize*2)==0)
+                                    thisIters = iters[x*height + y];
+                                else {
+                                    CDouble c = getPointJittered(x, y, 0.1);
+                                    thisIters = getEscapeIters(c);
+                                }
+                                
+                                for (int xp=x; xp<x+bsize && xp<xmax; xp++) {
+                                    for (int yp=y; yp<y+bsize && yp<height; yp++) {
+                                        iters[xp*height + yp] = thisIters;
+                                    }
                                 }
                             }
                         }
+                        process(null);
                     }
-                    process(null);
+                    
+                    return null;
                 }
-
-                return null;
-            }
-
-            @Override
-            protected void process(List<Void> chunks) {
-                fireModelChangedEvent();
-            }
+                
+                @Override
+                protected void process(List<Void> chunks) {
+                    fireModelChangedEvent();
+                }
 
             
 
-            @Override
-            protected void done() {
-                if (!isCancelled())
-                    fireModelChangedEvent();
-            }
-        };
-        worker.execute();
-
+                @Override
+                protected void done() {
+                    if (!isCancelled())
+                        fireModelChangedEvent();
+                }
+            });
+            workers.get(workers.size()-1).execute();
+        }
     }
 }
