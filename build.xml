@@ -1,0 +1,19 @@
+<project name="Mandelscape" default="build">
+
+    <target name="init">
+        <mkdir dir="build"/>
+        <mkdir dir="dist"/>
+    </target>
+
+    <target name="build" depends="init">
+        <javac srcdir="src" destdir="build"/>
+
+        <jar destfile="dist/Mandelscape.jar" basedir="build" manifest="MANIFEST.MF"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="build"/>
+        <delete dir="dist"/>
+    </target>
+
+</project>
